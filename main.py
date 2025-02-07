@@ -1,6 +1,7 @@
-import subprocess                   # Required
-import sys                          # Required
-import time                         # Required
+import subprocess            # Required
+import sys                   # Required
+import time                  # Required
+import os                    # Required 
 
 def usage(name):
     print(f"\nUsage:   python {name} model --local")
@@ -58,7 +59,7 @@ def setupLocal():
 
     print("\033[34m Running ollama... \033[0m")
     try:
-        with open('/dev/null', 'w') as devnull:
+        with open(os.devnull, 'w') as devnull:
             subprocess.Popen(["ollama", "serve"], stdout=devnull, stderr=devnull)
     except subprocess.CalledProcessError as e:
         sys.exit("\033[31m Failed to run ollama. \033[0m")
@@ -68,7 +69,7 @@ def setupLocal():
     try:
         subprocess.run(["ollama", "pull", inputModel], check=True)
     except subprocess.CalledProcessError as e:
-        print("\033[31m Failed to pull the model. \033[0m")
+        print("\033[33m Could not pull the provided model. \033[0m")
 
 def setupRemote():
     # Command to install requests
