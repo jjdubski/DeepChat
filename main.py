@@ -71,6 +71,15 @@ def setupLocal():
     except subprocess.CalledProcessError as e:
         print("\033[33m Could not pull the provided model. \033[0m")
 
+    # Get the local ollama version
+    print("\033[34m Getting ollama version... \033[0m")
+    try:
+        result = subprocess.run(["ollama", "--version"], capture_output=True, text=True, check=True)
+        global ollamaVersion
+        ollamaVersion = result.stdout.strip().split()[-1]
+    except subprocess.CalledProcessError as e:
+        print("\033[33m Failed to get ollama version. \033[0m")
+
 def setupRemote():
     # Command to install requests
     print("\033[34m Installing requests... \033[0m")
@@ -156,33 +165,29 @@ def remoteTests(headers):
         response = requests.get('http://localhost:11434/api/version')
         if response.status_code == 200:
             version_info = json.loads(response.text)
+            global ollamaVersion
+            ollamaVersion = version_info['version']
     except:
         sys.exit('\033[31m Failed to connect to ollama. \033[0m')
-    print("\033[32m Connected to ollama successfully! \n\033[0m")
+    print(f"\033[32m Connected to ollama successfully! \n\033[0m")
 
     # Check the if a model is available
     print(" Checking available models...")    
     try:
         response = requests.get('http://localhost:11434/api/tags')
         if response.status_code == 200:
-            # Debug
-            # models = json.loads(response.text)
-            # print("Available models:")
-            # for model in models['models']:
-            #     print(f"Name: {model['name']}")
-            #     print(f"Model: {model['model']}")
-            #     print(f"Modified At: {model['modified_at']}")
-            #     print(f"Size: {model['size']} bytes")
-            #     print(f"Digest: {model['digest']}")
-            #     print("Details:")
-            #     for key, value in model['details'].items():
-            #         print(f"  {key}: {value}")
             models = json.loads(response.text)
             print(" Available models:")
             for model in models['models']:
                 print(f"\033[0mName:\033[35m {model['name']} \033[0m")
                 print(f"Model:\033[35m {model['model']} \033[0m")
                 print(f"Size:\033[35m {model['size']} bytes \n\033[0m")
+                # Debug
+                # print(f"Modified At: {model['modified_at']}")
+                # print(f"Digest: {model['digest']}")
+                # print("Details:")
+                # for key, value in model['details'].items():
+                    # print(f"  {key}: {value}")
     except:
         sys.exit('\033[31m No models found. Try to pull manually. \033[0m')
 
@@ -298,7 +303,9 @@ def main():
         remoteTests(headers)
         connected = True
 
-    print("\033[32m All tests passed successfully. \033[0m")    
+    print("\033[32m All tests passed successfully. \033[0m")
+
+    print(f"\033[34m Using ollama v{ollamaVersion} \033[0m")    
 
     print(f"\033[33m Using model:\t{inputModel} \033[0m")
 
