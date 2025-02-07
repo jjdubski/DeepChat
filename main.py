@@ -1,13 +1,6 @@
 import subprocess                   # Required
 import sys                          # Required
 import time                         # Required
-# Local version Packages
-from ollama import chat             # Local 
-from ollama import ChatResponse     # Local
-import re                           # Local
-# Remote version Packages
-import json                         # Remote
-import requests                     # Remote
 
 def usage(name):
     print(f"\nUsage:   python {name} model --local")
@@ -104,6 +97,10 @@ def setupRemote():
 
 
 def localTests():
+    # Local version Packages
+    from ollama import chat             
+    from ollama import ChatResponse     
+
     # Local version tests
 
     # Test prompt
@@ -122,79 +119,87 @@ def localTests():
     print(f"\033[32m Test prompt completed in \033[0m{end_time - start_time:.2f} seconds")
 
 def remoteTests(headers):
-        # Docker / Remote version tests 
+    # Remote version Packages
+    import json                         
+    import requests                     
 
-        # Check if ollama container is running
-        print("\033[34m Checking if the container is running... \033[0m")
-        try:
-            subprocess.run(["docker", "logs", "ollama"], check=True)
-        except subprocess.CalledProcessError as e:
-            sys.exit("\033[31m Container is not running. \033[0m")
+    # Docker / Remote version tests 
 
-        # Notfiy the user that the container has started successfully
-        print("\033[32m Container started successfully! \033[0m")
-        print("\033[34m Connecting to the container... \033[0m")
+    # Check if ollama container is running
+    print("\033[34m Checking if the container is running... \033[0m")
+    try:
+        subprocess.run(["docker", "logs", "ollama"], check=True)
+    except subprocess.CalledProcessError as e:
+        sys.exit("\033[31m Container is not running. \033[0m")
 
-        # Wait for the container to start
-        time.sleep(3)
+    # Notfiy the user that the container has started successfully
+    print("\033[32m Container started successfully! \033[0m")
+    print("\033[34m Connecting to the container... \033[0m")
 
-        # Check connection to ollama container
-        try:
-            response = requests.get('http://localhost:11434/api/version')
-            if response.status_code == 200:
-                version_info = json.loads(response.text)
-        except:
-            sys.exit('\033[31m Failed to connect to ollama. \033[0m')
-        print("\033[32m Connected to ollama successfully! \n\033[0m")
+    # Wait for the container to start
+    time.sleep(3)
 
-        # Run tests
-        print("\033[36m Running tests...")
+    # Check connection to ollama container
+    try:
+        response = requests.get('http://localhost:11434/api/version')
+        if response.status_code == 200:
+            version_info = json.loads(response.text)
+    except:
+        sys.exit('\033[31m Failed to connect to ollama. \033[0m')
+    print("\033[32m Connected to ollama successfully! \n\033[0m")
 
-        # Check the if a model is available
-        print(" Checking available models...")    
-        try:
-            response = requests.get('http://localhost:11434/api/tags')
-            if response.status_code == 200:
-                # Debug
-                # models = json.loads(response.text)
-                # print("Available models:")
-                # for model in models['models']:
-                #     print(f"Name: {model['name']}")
-                #     print(f"Model: {model['model']}")
-                #     print(f"Modified At: {model['modified_at']}")
-                #     print(f"Size: {model['size']} bytes")
-                #     print(f"Digest: {model['digest']}")
-                #     print("Details:")
-                #     for key, value in model['details'].items():
-                #         print(f"  {key}: {value}")
-                models = json.loads(response.text)
-                print(" Available models:")
-                for model in models['models']:
-                    print(f"\033[0mName:\033[35m {model['name']} \033[0m")
-                    print(f"Model:\033[35m {model['model']} \033[0m")
-                    print(f"Size:\033[35m {model['size']} bytes \n\033[0m")
-        except:
-            sys.exit('\033[31m No models found. Try to pull manually. \033[0m')
+    # Run tests
+    print("\033[36m Running tests...")
 
-        print("\033[36m Running a test prompt with your model... \n\033[0m")  
-        start_time = time.time()
-        try:
-            response = requests.post(
-                    'http://localhost:11434/api/generate',
-                    headers=headers,
-                    data=json.dumps({
-                        'model': inputModel,
-                        'prompt': ' '
-                    })
-                )
-            if response.status_code == 200:
-                pass
-        except:
-            sys.exit('\033[31m Your model is not functioning or missing. Try to remove it and pull manually. \033[0m')
-        end_time = time.time()
-        print(f"\033[32m Test prompt completed in \033[0m{end_time - start_time:.2f} seconds")
+    # Check the if a model is available
+    print(" Checking available models...")    
+    try:
+        response = requests.get('http://localhost:11434/api/tags')
+        if response.status_code == 200:
+            # Debug
+            # models = json.loads(response.text)
+            # print("Available models:")
+            # for model in models['models']:
+            #     print(f"Name: {model['name']}")
+            #     print(f"Model: {model['model']}")
+            #     print(f"Modified At: {model['modified_at']}")
+            #     print(f"Size: {model['size']} bytes")
+            #     print(f"Digest: {model['digest']}")
+            #     print("Details:")
+            #     for key, value in model['details'].items():
+            #         print(f"  {key}: {value}")
+            models = json.loads(response.text)
+            print(" Available models:")
+            for model in models['models']:
+                print(f"\033[0mName:\033[35m {model['name']} \033[0m")
+                print(f"Model:\033[35m {model['model']} \033[0m")
+                print(f"Size:\033[35m {model['size']} bytes \n\033[0m")
+    except:
+        sys.exit('\033[31m No models found. Try to pull manually. \033[0m')
+
+    print("\033[36m Running a test prompt with your model... \n\033[0m")  
+    start_time = time.time()
+    try:
+        response = requests.post(
+                'http://localhost:11434/api/generate',
+                headers=headers,
+                data=json.dumps({
+                    'model': inputModel,
+                    'prompt': ' '
+                })
+            )
+        if response.status_code == 200:
+            pass
+    except:
+        sys.exit('\033[31m Your model is not functioning or missing. Try to remove it and pull manually. \033[0m')
+    end_time = time.time()
+    print(f"\033[32m Test prompt completed in \033[0m{end_time - start_time:.2f} seconds")
 
 def runRemote(headers):
+    # Remote version Packages
+    import json                         
+    import requests                     
+
     try:
         inputMsg = input("\n\033[33mInput your prompt: \033[0m")
         print("🧠 Thinking...")
@@ -237,6 +242,10 @@ def runRemote(headers):
         pass
 
 def runLocal():
+    # Local version Packages
+    from ollama import chat              
+    from ollama import ChatResponse     
+    import re                           
     try:
         inputMsg = input("\n\033[33mInput your prompt: \033[0m")
         print("🧠 Thinking...")
