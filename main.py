@@ -13,6 +13,7 @@ def usage(name):
 # Initialize variables
 local = False
 inputModel = 'deepseek-r1:1.5b'
+num_ctx = 8192
 
 def setup():
     global local
@@ -57,7 +58,7 @@ def setupLocal():
     try:
         subprocess.run(["ollama", "pull", inputModel], check=True)
     except subprocess.CalledProcessError as e:
-        sys.exit("\033[31m Failed to pull the model. \033[0m")
+        print("\033[31m Failed to pull the model. \033[0m")
 
 def setupRemote():
     # Command to install requests
@@ -69,14 +70,14 @@ def setupRemote():
     try:
         subprocess.run(["docker", "stop", "ollama"], check=True)
     except subprocess.CalledProcessError as e:
-        print("\033[31m No existing container to stop. \033[0m") 
+        print("\033[33m No existing container to stop. \033[0m") 
 
     # Remove the existing container
     print("\033[34m Removing the existing container... \033[0m")
     try:
         subprocess.run(["docker", "rm", "ollama"], check=True)
     except subprocess.CalledProcessError as e:
-        print("\033[31m No existing container to remove. \033[0m")
+        print("\033[33m No existing container to remove. \033[0m")
 
     # Run a new container
     print("\033[34m Starting a new container... \033[0m")
@@ -107,7 +108,7 @@ def localTests():
     print(" Running a test prompt with your model... \033[0m")
     start_time = time.time()
     try:
-        response: ChatResponse = chat(model='deepseek-r1:1.5b', messages=[
+        response: ChatResponse = chat(model=inputModel, messages=[
                     {
                         'role': 'user',
                         'content': ' '
@@ -196,6 +197,7 @@ def remoteTests(headers):
     print(f"\033[32m Test prompt completed in \033[0m{end_time - start_time:.2f} seconds")
 
 def runRemote(headers):
+    global num_ctx
     # Remote version Packages
     import json                         
     import requests                     
@@ -208,7 +210,8 @@ def runRemote(headers):
             headers=headers,
             data=json.dumps({
                 'model': inputModel,
-                'prompt': inputMsg
+                'prompt': inputMsg,
+                "options": {"num_ctx": num_ctx}
             })
         )
         print("🛑 Done!", end='')
@@ -236,6 +239,8 @@ def runRemote(headers):
             print(f"\nRequest failed with status code {response.status_code}")
             print(f"Response: {response.text}")
         print()
+    except requests.exceptions.RequestException as e:
+        print(f"\n\033[31m Error: {e} \033[0m")
     except KeyboardInterrupt:
         sys.exit("\n\t\033[31m Exiting... \033[0m")
     except EOFError:
@@ -254,6 +259,8 @@ def runLocal():
                 {
                     'role': 'user',
                     'content': inputMsg,
+                    # 'options': {"num_ctx": 24576,
+                    #             "num_predict": 8192}
                 },
             ])
         except Exception as e:
