@@ -47,11 +47,21 @@ def setup():
 def setupLocal():
     # Command to upgrade pip
     print("\033[34m Upgrade pip... \033[0m")
-    subprocess.run(["python", "-m", "pip", "install", "--upgrade", "pip"], check=True)
+    subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "pip"], check=True)
 
     # Command to install ollama
     print("\033[34m Installing ollama... \033[0m")
-    subprocess.run(["pip", "install", "ollama"], check=True)
+    try:
+        subprocess.run(["pip", "install", "ollama"], check=True)
+    except subprocess.CalledProcessError as e:
+        pass
+
+    print("\033[34m Running ollama... \033[0m")
+    try:
+        with open('/dev/null', 'w') as devnull:
+            subprocess.Popen(["ollama", "serve"], stdout=devnull, stderr=devnull)
+    except subprocess.CalledProcessError as e:
+        sys.exit("\033[31m Failed to run ollama. \033[0m")
 
     # Pull the model
     print("\033[34m Pulling the model... \033[0m")
@@ -276,15 +286,11 @@ def main():
     setup()
     if local:
         setupLocal()
-    else:
-        setupRemote()
-
-    print("\033[36m Running tests...")
-
-    if local:
+        print("\033[36m Running tests...")
         localTests()
     else:
-        # Set the headers content type to json
+        setupRemote()
+        print("\033[36m Running tests...")
         headers = {
             'Content-Type': 'application/json'
         }
