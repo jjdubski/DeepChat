@@ -17,7 +17,9 @@ _\* pulls models using ollama based on their naming
 - python3 main.py deepseek-coder-v2  
 (Runs ollama and model in docker container)  
 
-#### \* The --local & -l tags are optional, when inputted it will run ollama and the model locally on your system
+* **The --local or -l flag is optional**
+  - With --local or -l: ollama and the model locally on your system
+  - Without any flags: run the ollama docker image with chosen model
 
 # Notes
 
