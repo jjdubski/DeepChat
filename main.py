@@ -149,9 +149,6 @@ def remoteTests(headers):
         sys.exit('\033[31m Failed to connect to ollama. \033[0m')
     print("\033[32m Connected to ollama successfully! \n\033[0m")
 
-    # Run tests
-    print("\033[36m Running tests...")
-
     # Check the if a model is available
     print(" Checking available models...")    
     try:
@@ -186,11 +183,9 @@ def remoteTests(headers):
                 headers=headers,
                 data=json.dumps({
                     'model': inputModel,
-                    'prompt': ' '
+                    'prompt': ' ',
                 })
             )
-        if response.status_code == 200:
-            pass
     except:
         sys.exit('\033[31m Your model is not functioning or missing. Try to remove it and pull manually. \033[0m')
     end_time = time.time()
