@@ -1,5 +1,5 @@
 # How to run  
-_\* python/python3 are interchangeable_  
+_\* python & python3 are interchangeable_  
 
 In your command line or terminal use:  
 - python main.py model --local  
